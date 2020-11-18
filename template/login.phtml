@@ -1,4 +1,5 @@
 <div id="login">
+<<<<<<< HEAD
    <form method="post">
        <input type="hidden" name="csrfToken" value="<?= $this->csrfToken->get(); ?>">
        <ul>
@@ -8,3 +9,14 @@
        </ul>
    </form>
 </div>
+=======
+    <form method="post" action="<?= htmlspecialchars($this->url->get(''))?>">
+        <input type="hidden" name="csrfToken" value="<?= $this->csrfToken->get(); ?>">
+        <ul>
+            <li><input type="text" name="username" value="<?= htmlspecialchars($this->username); ?>" placeholder="Username"></li>
+            <li><input type="password" name="password" placeholder="Password"></li>
+            <li><input type="submit" value="<?= $this->translator->translate('project.log_in'); ?>" disabled></li>
+        </ul>
+    </form>
+</div>
+>>>>>>> 7de269210b596104f6cdf59f897a6a71026f0bf4

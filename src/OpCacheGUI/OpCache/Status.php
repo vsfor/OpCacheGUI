@@ -130,8 +130,8 @@ class Status
     public function getStatsInfo()
     {
         if (!$this->statusData['opcache_enabled']) {
-             return [
-                 [
+            return [
+                [
                     'num_cached_scripts'   => 0,
                     'num_cached_keys'      => 0,
                     'max_cached_keys'      => 0,
@@ -139,15 +139,15 @@ class Status
                     'misses'               => 0,
                     'blacklist_misses'     => 0,
                     'blacklist_miss_ratio' => 'n/a',
-                 ],
-                 [
+                ],
+                [
                     'opcache_hit_rate'     => 'n/a',
                     'start_time'           => 'n/a',
                     'last_restart_time'    => 'n/a',
                     'oom_restarts'         => 'n/a',
                     'hash_restarts'        => 'n/a',
                     'manual_restarts'      => 'n/a',
-                 ],
+                ],
             ];
         }
 

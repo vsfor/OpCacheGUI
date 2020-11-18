@@ -2,9 +2,11 @@
 
 namespace OpCacheGUITest\OpCache;
 
+use OpCacheGUI\Format\Byte;
 use OpCacheGUI\OpCache\Configuration;
+use PHPUnit\Framework\TestCase;
 
-class ConfigurationTest extends \PHPUnit_Framework_TestCase
+class ConfigurationTest extends TestCase
 {
     protected $configData;
 
@@ -16,7 +18,6 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
                 'opcache.enable_cli'              => false,
                 'opcache.use_cwd'                 => true,
                 'opcache.validate_timestamps'     => true,
-                'opcache.inherited_hack'          => true,
                 'opcache.dups_fix'                => false,
                 'opcache.revalidate_path'         => false,
                 'opcache.log_verbosity_level'     => 1,
@@ -33,7 +34,6 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
                 'opcache.error_log'               => '',
                 'opcache.protect_memory'          => false,
                 'opcache.save_comments'           => false,
-                'opcache.load_comments'           => true,
                 'opcache.fast_shutdown'           => true,
                 'opcache.enable_file_override'    => true,
                 'opcache.optimization_level'      => 2147483647,
@@ -54,7 +54,7 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetIniDirectives()
     {
-        $formatter = $this->getMock('\\OpCacheGUI\\Format\\Byte');
+        $formatter = $this->createMock(Byte::class);
         $formatter->method('format')->willReturn('1KB');
 
         $config = new Configuration($formatter, $this->configData);
@@ -70,7 +70,7 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetBlackList()
     {
-        $config = new Configuration($this->getMock('\\OpCacheGUI\\Format\\Byte'), $this->configData);
+        $config = new Configuration($this->createMock(Byte::class), $this->configData);
 
         $this->assertSame($this->configData['blacklist'], $config->getBlackList());
     }

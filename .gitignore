@@ -1,4 +1,4 @@
-/public/.htaccess
-init.*.php
-vendor
 .idea/
+/public/.htaccess
+config.php
+vendor

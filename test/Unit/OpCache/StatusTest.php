@@ -2,14 +2,20 @@
 
 namespace OpCacheGUITest\OpCache;
 
+use OpCacheGUI\Format\Byte;
+use OpCacheGUI\Format\Trimmer;
+use OpCacheGUI\I18n\Translator;
 use OpCacheGUI\OpCache\Status;
+use PHPUnit\Framework\TestCase;
 
-class StatusTest extends \PHPUnit_Framework_TestCase
+class StatusTest extends TestCase
 {
     protected $statusData;
 
     protected function setUp()
     {
+        date_default_timezone_set('UTC');
+
         $this->statusData = [
             'opcache_enabled'     => true,
             'cache_full'          => false,
@@ -95,8 +101,8 @@ class StatusTest extends \PHPUnit_Framework_TestCase
     public function testGetStatusInfo()
     {
         $status = new Status(
-            $this->getMock('\\OpCacheGUI\\Format\\Byte'),
-            $this->getMock('\\OpCacheGUI\\I18n\\Translator'),
+            $this->createMock(Byte::class),
+            $this->createMock(Translator::class),
             $this->statusData
         );
 
@@ -119,10 +125,10 @@ class StatusTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetMemoryInfo()
     {
-        $formatter = $this->getMock('\\OpCacheGUI\\Format\\Byte');
+        $formatter = $this->createMock(Byte::class);
         $formatter->method('format')->will($this->onConsecutiveCalls('1KB', '2KB', '3KB'));
 
-        $status = new Status($formatter, $this->getMock('\\OpCacheGUI\\I18n\\Translator'), $this->statusData);
+        $status = new Status($formatter, $this->createMock(Translator::class), $this->statusData);
 
         $data = $this->statusData;
 
@@ -140,11 +146,11 @@ class StatusTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetGraphMemoryInfo()
     {
-        $translator = $this->getMock('\\OpCacheGUI\\I18n\\Translator');
+        $translator = $this->createMock(Translator::class);
         $translator->method('translate')->will($this->onConsecutiveCalls('Used', 'Free', 'Wasted'));
 
         $status = new Status(
-            $this->getMock('\\OpCacheGUI\\Format\\Byte'),
+            $this->createMock(Byte::class),
             $translator,
             $this->statusData
         );
@@ -180,8 +186,8 @@ class StatusTest extends \PHPUnit_Framework_TestCase
         $statusData['opcache_enabled'] = false;
 
         $status = new Status(
-            $this->getMock('\\OpCacheGUI\\Format\\Byte'),
-            $this->getMock('\\OpCacheGUI\\I18n\\Translator'),
+            $this->createMock(Byte::class),
+            $this->createMock(Translator::class),
             $statusData
         );
 
@@ -215,8 +221,8 @@ class StatusTest extends \PHPUnit_Framework_TestCase
     public function testGetStatsInfoWithOpCacheEnabled()
     {
         $status = new Status(
-            $this->getMock('\\OpCacheGUI\\Format\\Byte'),
-            $this->getMock('\\OpCacheGUI\\I18n\\Translator'),
+            $this->createMock(Byte::class),
+            $this->createMock(Translator::class),
             $this->statusData
         );
 
@@ -239,6 +245,35 @@ class StatusTest extends \PHPUnit_Framework_TestCase
      * @covers OpCacheGUI\OpCache\Status::__construct
      * @covers OpCacheGUI\OpCache\Status::getStatsInfo
      */
+    public function testGetStatsInfoWithOpCacheEnabledTakesIntoAccountTimeZones()
+    {
+        date_default_timezone_set('Europe/Amsterdam');
+
+        $status = new Status(
+            $this->createMock(Byte::class),
+            $this->createMock(Translator::class),
+            $this->statusData
+        );
+
+        $data = $this->statusData['opcache_statistics'];
+
+        $data['blacklist_miss_ratio'] = 0.0;
+        $data['opcache_hit_rate']     = '95.16%';
+        $data['start_time']           = '15:41:33 08-10-2014';
+        $data['last_restart_time']    = '19:40:00 08-10-2014';
+
+        $formattedData = [
+            array_slice($data, 0, 7, true),
+            array_slice($data, 7, null, true),
+        ];
+
+        $this->assertSame($formattedData, $status->getStatsInfo());
+    }
+
+    /**
+     * @covers OpCacheGUI\OpCache\Status::__construct
+     * @covers OpCacheGUI\OpCache\Status::getStatsInfo
+     */
     public function testGetStatsInfoWithOpCacheEnabledWithoutRestart()
     {
         $statusData = $this->statusData;
@@ -246,8 +281,8 @@ class StatusTest extends \PHPUnit_Framework_TestCase
         $statusData['opcache_statistics']['last_restart_time'] = 0;
 
         $status = new Status(
-            $this->getMock('\\OpCacheGUI\\Format\\Byte'),
-            $this->getMock('\\OpCacheGUI\\I18n\\Translator'),
+            $this->createMock(Byte::class),
+            $this->createMock(Translator::class),
             $statusData
         );
 
@@ -272,10 +307,10 @@ class StatusTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetGraphKeyStatsInfo()
     {
-        $translator = $this->getMock('\\OpCacheGUI\\I18n\\Translator');
+        $translator = $this->createMock(Translator::class);
         $translator->method('translate')->will($this->onConsecutiveCalls('Used', 'Free', 'Wasted'));
 
-        $status = new Status($this->getMock('\\OpCacheGUI\\Format\\Byte'), $translator, $this->statusData);
+        $status = new Status($this->createMock(Byte::class), $translator, $this->statusData);
 
         $data = [
             [
@@ -304,10 +339,10 @@ class StatusTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetGraphHitStatsInfo()
     {
-        $translator = $this->getMock('\\OpCacheGUI\\I18n\\Translator');
+        $translator = $this->createMock(Translator::class);
         $translator->method('translate')->will($this->onConsecutiveCalls('Hits', 'Misses', 'Blacklisted'));
 
-        $status = new Status($this->getMock('\\OpCacheGUI\\Format\\Byte'), $translator, $this->statusData);
+        $status = new Status($this->createMock(Byte::class), $translator, $this->statusData);
 
         $data = [
             [
@@ -341,8 +376,8 @@ class StatusTest extends \PHPUnit_Framework_TestCase
         unset($statusData['scripts']);
 
         $status = new Status(
-            $this->getMock('\\OpCacheGUI\\Format\\Byte'),
-            $this->getMock('\\OpCacheGUI\\I18n\\Translator'),
+            $this->createMock(Byte::class),
+            $this->createMock(Translator::class),
             $statusData
         );
 
@@ -356,10 +391,10 @@ class StatusTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetCachedScriptsFilled()
     {
-        $formatter = $this->getMock('\\OpCacheGUI\\Format\\Byte');
+        $formatter = $this->createMock(Byte::class);
         $formatter->method('format')->will($this->onConsecutiveCalls('1KB', '2KB', '3KB', '4KB', '5KB', '6KB'));
 
-        $status = new Status($formatter, $this->getMock('\\OpCacheGUI\\I18n\\Translator'), $this->statusData);
+        $status = new Status($formatter, $this->createMock(Translator::class), $this->statusData);
 
         $data = [
             [
@@ -412,6 +447,68 @@ class StatusTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers OpCacheGUI\OpCache\Status::__construct
      * @covers OpCacheGUI\OpCache\Status::getCachedScripts
+     * @covers OpCacheGUI\OpCache\Status::sortCachedScripts
+     */
+    public function testGetCachedScriptsFilledTakesIntoAccountTimeZones()
+    {
+        date_default_timezone_set('Europe/Amsterdam');
+
+        $formatter = $this->createMock(Byte::class);
+        $formatter->method('format')->will($this->onConsecutiveCalls('1KB', '2KB', '3KB', '4KB', '5KB', '6KB'));
+
+        $status = new Status($formatter, $this->createMock(Translator::class), $this->statusData);
+
+        $data = [
+            [
+                'full_path'           => '/var/www/vhosts/NoTimeStamp/src/Psr/Autoloader.php',
+                'hits'                => 12876,
+                'memory_consumption'  => '6KB',
+                'last_used_timestamp' => '16:25:15 09-10-2014',
+                'timestamp'           => 'N/A',
+            ],
+            [
+                'full_path'           => '/var/www/vhosts/OpcacheGUI/src/OpCacheGUI/Network/Request.php',
+                'hits'                => 1,
+                'memory_consumption'  => '1KB',
+                'last_used_timestamp' => '16:08:35 09-10-2014',
+                'timestamp'           => '18:20:53 07-10-2014',
+            ],
+            [
+                'full_path'           => '/var/www/vhosts/OpcacheGUI/template/cached.phtml',
+                'hits'                => 4,
+                'memory_consumption'  => '2KB',
+                'last_used_timestamp' => '16:08:35 09-10-2014',
+                'timestamp'           => '18:20:53 07-10-2014',
+            ],
+            [
+                'full_path'           => '/var/www/vhosts/RedTube/template/humiliation/germany-vs-brazil.phtml',
+                'hits'                => 71,
+                'memory_consumption'  => '4KB',
+                'last_used_timestamp' => '16:25:15 09-10-2014',
+                'timestamp'           => '22:01:15 08-10-2014',
+            ],
+            [
+                'full_path'           => '/var/www/vhosts/SomeOtherProject/src/Foo.php',
+                'hits'                => 19,
+                'memory_consumption'  => '3KB',
+                'last_used_timestamp' => '17:31:55 09-10-2014',
+                'timestamp'           => '22:07:33 08-10-2014',
+            ],
+            [
+                'full_path'           => '/var/www/vhosts/SomeOtherProject/src/Psr/Autoloader.php',
+                'hits'                => 32,
+                'memory_consumption'  => '5KB',
+                'last_used_timestamp' => '16:25:15 09-10-2014',
+                'timestamp'           => '22:01:15 08-10-2014',
+            ],
+        ];
+
+        $this->assertSame($data, $status->getCachedScripts());
+    }
+
+    /**
+     * @covers OpCacheGUI\OpCache\Status::__construct
+     * @covers OpCacheGUI\OpCache\Status::getCachedScripts
      */
     public function testGetCachedScriptsZeroedTimestamp()
     {
@@ -429,8 +526,8 @@ class StatusTest extends \PHPUnit_Framework_TestCase
         ];
 
         $status = new Status(
-            $this->getMock('\\OpCacheGUI\\Format\\Byte'),
-            $this->getMock('\\OpCacheGUI\\I18n\\Translator'),
+            $this->createMock(Byte::class),
+            $this->createMock(Translator::class),
             $statusData
         );
 
@@ -445,10 +542,10 @@ class StatusTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetCachedScriptsForOverviewFilled()
     {
-        $formatter = $this->getMock('\\OpCacheGUI\\Format\\Byte');
+        $formatter = $this->createMock(Byte::class);
         $formatter->method('format')->will($this->onConsecutiveCalls('1KB', '2KB', '3KB', '4KB', '5KB', '6KB'));
 
-        $status = new Status($formatter, $this->getMock('\\OpCacheGUI\\I18n\\Translator'), $this->statusData);
+        $status = new Status($formatter, $this->createMock(Translator::class), $this->statusData);
 
         $data = [
             [
@@ -495,7 +592,7 @@ class StatusTest extends \PHPUnit_Framework_TestCase
             ],
         ];
 
-        $trimmer = $this->getMock('\\OpCacheGUI\\Format\\Trimmer');
+        $trimmer = $this->createMock(Trimmer::class);
         $trimmer->method('trim')->will($this->returnArgument(0));
 
         $this->assertSame($data, $status->getCachedScriptsForOverview($trimmer));
