@@ -156,7 +156,7 @@ class Status
         $lastRestartTime = null;
 
         if ($stats['last_restart_time']) {
-            $lastRestartTime = (new \DateTime('@' . $stats['last_restart_time']))->format('H:i:s d-m-Y');
+            $lastRestartTime = date('Y-m-d H:i:s', $stats['last_restart_time']);
         }
 
         return [
@@ -171,7 +171,7 @@ class Status
             ],
             [
                 'opcache_hit_rate'     => round($stats['opcache_hit_rate'], 2) . '%',
-                'start_time'           => (new \DateTime('@' . $stats['start_time']))->format('H:i:s d-m-Y'),
+                'start_time'           => date('Y-m-d H:i:s', $stats['start_time']),
                 'last_restart_time'    => $lastRestartTime,
                 'oom_restarts'         => $stats['oom_restarts'],
                 'hash_restarts'        => $stats['hash_restarts'],
@@ -257,14 +257,14 @@ class Status
             $timestamp = 'N/A';
 
             if (isset($script['timestamp'])) {
-                $timestamp = (new \DateTime('@' . $script['timestamp']))->format('H:i:s d-m-Y');
+                $timestamp = date('Y-m-d H:i:s', $script['timestamp']);
             }
 
             $scripts[] = [
                 'full_path'           => $script['full_path'],
                 'hits'                => $script['hits'],
                 'memory_consumption'  => $this->byteFormatter->format($script['memory_consumption']),
-                'last_used_timestamp' => (new \DateTime('@' . $script['last_used_timestamp']))->format('H:i:s d-m-Y'),
+                'last_used_timestamp' => date('Y-m-d H:i:s', $script['last_used_timestamp']),
                 'timestamp'           => $timestamp,
             ];
         }
